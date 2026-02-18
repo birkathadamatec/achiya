@@ -1,0 +1,770 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0b1020" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="image.png" />
+  <title>חיפוש ברקוד → חלונית</title>
+
+  <style>
+    :root{
+      --bg:#0b1020;
+      --card:#111a33;
+      --text:#eaf0ff;
+      --muted:#a9b4d6;
+      --accent:#6ea8ff;
+      --accent2:#76f3c7;
+      --danger:#ff6b6b;
+      --shadow: 0 20px 60px rgba(0,0,0,.35);
+      --radius: 18px;
+      --label-border: rgba(255,255,255,.18);
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Noto Sans Hebrew", "Assistant", sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 70% 0%, rgba(110,168,255,.25), transparent 60%),
+        radial-gradient(900px 600px at 10% 30%, rgba(118,243,199,.18), transparent 55%),
+        linear-gradient(180deg, #070a14, var(--bg));
+      min-height:100vh;
+    }
+
+    .wrap{max-width: 980px; margin: 0 auto; padding: 28px 18px 60px;}
+    header{display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:18px;}
+    .brand{display:flex; align-items:center; gap:12px;}
+    .brand .dot{
+      width:14px;height:14px;border-radius:50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 0 0 6px rgba(110,168,255,.12);
+    }
+    h1{margin:0; font-size: 18px; letter-spacing:.2px; font-weight: 750;}
+    .sub{margin:0; color:var(--muted); font-size: 13px; margin-top:2px;}
+
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .row{display:flex; gap:12px; flex-wrap:wrap; align-items:stretch;}
+    .inputWrap{flex: 1 1 380px; position:relative;}
+    input[type="text"]{
+      width:100%;
+      padding: 14px 14px 14px 46px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(10,14,28,.55);
+      color: var(--text);
+      outline: none;
+      font-size: 16px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
+    }
+    input[type="text"]::placeholder{color: rgba(233,240,255,.55)}
+    input[type="text"]:focus{border-color: rgba(110,168,255,.55); box-shadow: 0 0 0 6px rgba(110,168,255,.16);}
+
+    .scanIcon{
+      position:absolute; left: 12px; top:50%;
+      transform: translateY(-50%);
+      width: 22px; height: 22px;
+      opacity:.9; pointer-events:none;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,.35));
+    }
+
+    button{
+      border:0; border-radius: 14px;
+      padding: 14px 16px;
+      font-size: 15px; font-weight: 700;
+      cursor:pointer;
+      transition: transform .08s ease, filter .15s ease, opacity .2s ease;
+      user-select:none; white-space:nowrap;
+    }
+    button:active{transform: translateY(1px)}
+    .btnPrimary{
+      background: linear-gradient(135deg, var(--accent), #8d7bff);
+      color: #081022;
+      box-shadow: 0 14px 30px rgba(110,168,255,.22);
+    }
+    .btnGhost{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      color: var(--text);
+    }
+    .btnInstall{
+      background: linear-gradient(135deg, #76f3c7, #6ea8ff);
+      color: #07111f;
+      box-shadow: 0 14px 30px rgba(118,243,199,.2);
+      display:none;
+    }
+    .btnInstall.show{display:inline-block;}
+    .btnSecondary{
+      background: linear-gradient(135deg, #ffd66e, #ff9f7a);
+      color: #251005;
+      box-shadow: 0 14px 30px rgba(255,159,122,.22);
+    }
+    .btnCloseModal{
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.2);
+      color: var(--text);
+      margin-top: 10px;
+    }
+    .sumTableWrap{
+      width: min(760px, 96%);
+      max-height: 54vh;
+      overflow:auto;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 14px;
+      background: rgba(10,14,28,.35);
+    }
+    .sumTable{
+      width:100%;
+      border-collapse: collapse;
+      font-size: clamp(16px, 2vw, 24px);
+    }
+    .sumTable th, .sumTable td{
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      text-align: right;
+    }
+    .sumTable th{
+      position: sticky;
+      top: 0;
+      background: rgba(7,10,20,.9);
+      color: rgba(233,240,255,.9);
+      font-weight: 800;
+    }
+    .sumTable tr:last-child td{border-bottom:0;}
+    .sumTitle{
+      font-weight: 850;
+      font-size: clamp(28px, 4vw, 48px);
+      margin-bottom: 8px;
+    }
+    .btnPrimary[disabled], .btnGhost[disabled], .btnSecondary[disabled]{opacity:.55; cursor:not-allowed}
+
+    .status{
+      margin-top: 12px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color: var(--muted);
+      font-size: 13px;
+      min-height: 20px;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      font-weight: 650;
+      font-size: 12px;
+    }
+    .spinner{
+      width:14px;height:14px;border-radius:50%;
+      border: 2px solid rgba(255,255,255,.25);
+      border-top-color: rgba(255,255,255,.85);
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {to{transform:rotate(360deg)}}
+    .error{color: #ffd6d6;}
+    .error .pill{
+      border-color: rgba(255,107,107,.45);
+      background: rgba(255,107,107,.10);
+      color: #ffd6d6;
+    }
+
+    /* =========================
+       FULLSCREEN MODAL (חלונית)
+       ========================= */
+    .modalOverlay{
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.65);
+      backdrop-filter: blur(6px);
+      z-index: 9999;
+      padding: 10px;
+    }
+    .modalOverlay.show{display:flex;}
+
+    .modal{
+      width: min(980px, 96vw);
+      height: min(720px, 92vh); /* כמעט כל המסך */
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 22px;
+      box-shadow: 0 30px 100px rgba(0,0,0,.55);
+      position: relative;
+      overflow: hidden;
+      display:flex;
+      flex-direction:column;
+      padding: 18px;
+    }
+    .modal::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background:
+        radial-gradient(700px 400px at 80% 0%, rgba(110,168,255,.22), transparent 60%),
+        radial-gradient(520px 400px at 10% 100%, rgba(118,243,199,.18), transparent 60%);
+      pointer-events:none;
+    }
+    .modal > *{position:relative; z-index:1}
+
+    .modalTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom: 10px;
+    }
+    .modalLogo{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+    .modalLogo img{
+      width: 56px; height: 56px; object-fit: contain;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 14px;
+      padding: 8px;
+    }
+
+    .orderSmall{
+      font-size: 20px;
+      color: rgba(233,240,255,.8);
+      background: rgba(0,0,0,.18);
+      border: 1px solid rgba(255,255,255,.12);
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+      max-width: 70%;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .modalBody{
+      flex: 1;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+      padding: 10px 10px 14px;
+      gap: 14px;
+    }
+
+    /* שם הנהג - ענק */
+    .driverBig{
+      font-weight: 900;
+      letter-spacing: .3px;
+      line-height: 1.05;
+      font-size: clamp(64px, 10vw, 170px);
+      color: var(--text);
+      text-shadow: 0 16px 40px rgba(0,0,0,.35);
+      word-break: break-word;
+    }
+
+    /* מספר משימה - גדול אבל פחות מהשם */
+    .taskMid{
+      font-weight: 850;
+      font-size: clamp(34px, 5.2vw, 90px);
+      color: rgba(233,240,255,.92);
+      background: rgba(10,14,28,.35);
+      border: 1px solid rgba(255,255,255,.12);
+      padding: 16px 20px;
+      border-radius: 16px;
+      width: min(820px, 92%);
+      word-break: break-word;
+    }
+
+    .hintSmall{
+      margin-top: 6px;
+      color: rgba(233,240,255,.55);
+      font-size: 12px;
+    }
+
+    @media (max-width: 520px){
+      .modal{
+        width: 96vw;
+        height: 94vh; /* בטלפון כמעט כל המסך */
+        padding: 14px;
+        border-radius: 18px;
+      }
+      .modalLogo img{width: 50px; height: 50px;}
+      .orderSmall{max-width: 78%;}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="dot"></div>
+        <div>
+          <h1>חיפוש ברקוד והצגת חלונית</h1>
+          <p class="sub">סריקה → חלונית 3 שניות → חזרה אוטומטית לסריקה</p>
+        </div>
+      </div>
+      <div class="noPrint" style="display:flex; gap:10px; align-items:center;">
+        <span class="pill" title="סמל האפליקציה נטען מהקובץ image.png">image.png ✓</span>
+      </div>
+    </header>
+
+    <div class="panel noPrint">
+      <div class="row">
+        <div class="inputWrap">
+          <svg class="scanIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 7V6a2 2 0 0 1 2-2h1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M20 7V6a2 2 0 0 0-2-2h-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M4 17v1a2 2 0 0 0 2 2h1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M20 17v1a2 2 0 0 1-2 2h-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M7 12h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M7 9v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M10 9v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M13 9v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M16 9v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+
+          <input id="barcodeInput" type="text" inputmode="text" autocomplete="off"
+                 placeholder="סרוק / הדבק ברקוד כאן…" />
+        </div>
+
+        <button id="searchBtn" class="btnPrimary">חיפוש</button>
+        <button id="sumBtn" class="btnSecondary">בדיקת משטחים</button>
+        <button id="clearBtn" class="btnGhost">נקה</button>
+        <button id="installBtn" class="btnInstall" aria-label="התקנת אפליקציה">התקנת אפליקציה</button>
+      </div>
+
+      <div id="status" class="status"></div>
+    </div>
+  </div>
+
+  <!-- חלונית -->
+  <div id="modalOverlay" class="modalOverlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal">
+      <div class="modalTop">
+        <div class="modalLogo">
+          <img src="image.png" alt="לוגו" onerror="this.style.display='none'">
+        </div>
+        <div id="orderSmall" class="orderSmall"></div>
+      </div>
+
+      <div class="modalBody">
+        <div id="driverBig" class="driverBig"></div>
+        <div id="taskMid" class="taskMid"></div>
+        <div class="hintSmall">נסגר אוטומטית בעוד רגע…</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sumModalOverlay" class="modalOverlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal">
+      <div class="modalTop">
+        <div class="modalLogo">
+          <img src="image.png" alt="לוגו" onerror="this.style.display='none'">
+        </div>
+        <div class="orderSmall">בדיקת משטחים</div>
+      </div>
+
+      <div class="modalBody">
+        <div class="sumTitle">נתוני משטחים</div>
+        <div class="sumTableWrap">
+          <table class="sumTable" aria-label="טבלת משטחים">
+            <thead>
+              <tr>
+                <th>שם משטח</th>
+                <th>כמות</th>
+              </tr>
+            </thead>
+            <tbody id="sumTableBody"></tbody>
+          </table>
+        </div>
+        <button id="sumCloseBtn" class="btnCloseModal">סגור חלונית</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // === Config ===
+    const WEBHOOK_URL = "https://hook.integrator.boost.space/36qda98lb8qyzgj53xuqnsi8igbugnxr";
+
+    // דרישה: אם אין 201 עם נתונים תוך 2 שניות => שגיאה
+    const POLL_TIMEOUT_MS  = 2000;
+    const POLL_INTERVAL_MS = 250;
+
+    // זיהוי "סריקה" מול "הקלדה ידנית"
+    const SCAN_MAX_TOTAL_MS = 220;
+    const SCAN_MIN_LEN      = 4;
+
+    // חלונית
+    const MODAL_AUTO_CLOSE_MS = 1500;
+
+    // === Elements ===
+    const barcodeInput = document.getElementById("barcodeInput");
+    const searchBtn    = document.getElementById("searchBtn");
+    const sumBtn       = document.getElementById("sumBtn");
+    const clearBtn     = document.getElementById("clearBtn");
+    const statusEl     = document.getElementById("status");
+    const installBtn   = document.getElementById("installBtn");
+
+    const modalOverlay = document.getElementById("modalOverlay");
+    const orderSmallEl = document.getElementById("orderSmall");
+    const driverBigEl  = document.getElementById("driverBig");
+    const taskMidEl    = document.getElementById("taskMid");
+
+    const sumModalOverlay = document.getElementById("sumModalOverlay");
+    const sumTableBody    = document.getElementById("sumTableBody");
+    const sumCloseBtn     = document.getElementById("sumCloseBtn");
+
+    let activeAbortController = null;
+
+    // state for scan detection
+    let firstKeyTime = null;
+    let lastKeyTime = null;
+    let keyCount = 0;
+
+    let modalCloseTimer = null;
+    let deferredInstallPrompt = null;
+
+    function isMobileDevice(){
+      return window.matchMedia("(max-width: 820px)").matches
+        || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || "");
+    }
+
+    function isStandalone(){
+      return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+    }
+
+    function toggleInstallButton(shouldShow){
+      if(shouldShow){
+        installBtn.classList.add("show");
+      }else{
+        installBtn.classList.remove("show");
+      }
+    }
+
+    function setStatus(text, {loading=false, error=false} = {}){
+      statusEl.className = "status" + (error ? " error" : "");
+      if(!text){
+        statusEl.innerHTML = "";
+        return;
+      }
+      const pill = loading
+        ? `<span class="pill"><span class="spinner" aria-hidden="true"></span> ${escapeHtml(text)}</span>`
+        : `<span class="pill">${escapeHtml(text)}</span>`;
+      statusEl.innerHTML = pill;
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function resetTypingProfile(){
+      firstKeyTime = null;
+      lastKeyTime = null;
+      keyCount = 0;
+    }
+
+    function isLikelyScan(){
+      const v = (barcodeInput.value || "").trim();
+      if(v.length < SCAN_MIN_LEN) return false;
+      if(firstKeyTime == null || lastKeyTime == null) return false;
+      const total = lastKeyTime - firstKeyTime;
+      return total > 0 && total <= SCAN_MAX_TOTAL_MS;
+    }
+
+    function resetToReady(){
+      barcodeInput.value = "";
+      resetTypingProfile();
+      setStatus("");
+      barcodeInput.focus();
+    }
+
+    function closeModal(){
+      if(modalCloseTimer){
+        clearTimeout(modalCloseTimer);
+        modalCloseTimer = null;
+      }
+      modalOverlay.classList.remove("show");
+      modalOverlay.setAttribute("aria-hidden", "true");
+      resetToReady();
+    }
+
+
+
+    function closeSumModal(){
+      sumModalOverlay.classList.remove("show");
+      sumModalOverlay.setAttribute("aria-hidden", "true");
+      sumTableBody.innerHTML = "";
+      resetToReady();
+    }
+
+    function normalizeSumRows(rawData){
+      if(Array.isArray(rawData)) return rawData;
+      if(Array.isArray(rawData?.data)) return rawData.data;
+      if(Array.isArray(rawData?.items)) return rawData.items;
+      if(rawData && typeof rawData === "object" && ("name" in rawData || "amount" in rawData)){
+        return [rawData];
+      }
+      return [];
+    }
+
+    function openSumModal(rows){
+      const tableRows = rows.map((row) => {
+        const name = escapeHtml(row?.name ?? "-");
+        const amount = escapeHtml(row?.amount ?? "-");
+        return `<tr><td>${name}</td><td>${amount}</td></tr>`;
+      }).join("");
+
+      sumTableBody.innerHTML = tableRows || '<tr><td colspan="2">לא התקבלו נתונים להצגה</td></tr>';
+      sumModalOverlay.classList.add("show");
+      sumModalOverlay.setAttribute("aria-hidden", "false");
+    }
+
+    function openModal({ wp_order_id, driver_str, barcode }){
+      // למקרה שקופץ שוב לפני שנסגר הקודם
+      if(modalCloseTimer){
+        clearTimeout(modalCloseTimer);
+        modalCloseTimer = null;
+      }
+
+      orderSmallEl.textContent = `הזמנה: ${wp_order_id || ""}`;
+      driverBigEl.textContent  = driver_str || "";
+      taskMidEl.textContent    = `משימה: ${barcode || ""}`;
+
+      modalOverlay.classList.add("show");
+      modalOverlay.setAttribute("aria-hidden", "false");
+
+      modalCloseTimer = setTimeout(() => {
+        closeModal();
+      }, MODAL_AUTO_CLOSE_MS);
+    }
+
+    // אפשר לסגור ידנית בלחיצה על הרקע (לא ביקשת, אבל זה הגיוני ולא מפריע)
+    modalOverlay.addEventListener("click", (e) => {
+      if(e.target === modalOverlay){
+        closeModal();
+      }
+    });
+
+    // ESC סוגר
+    window.addEventListener("keydown", (e) => {
+      if(e.key === "Escape" && modalOverlay.classList.contains("show")){
+        closeModal();
+      }
+      if(e.key === "Escape" && sumModalOverlay.classList.contains("show")){
+        closeSumModal();
+      }
+    });
+
+    async function safeReadText(res){
+      try { return (await res.text())?.slice(0, 200); } catch { return ""; }
+    }
+
+    async function postAndMaybeGetData(payload, signal){
+      const res = await fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal
+      });
+
+      if(res.status === 201){
+        const data = await res.json();
+        return { done: true, data };
+      }
+
+      if(res.status === 200){
+        return { done: false, data: null };
+      }
+
+      const txt = await safeReadText(res);
+      throw new Error(`שגיאה מהשרת: ${res.status}${txt ? " - " + txt : ""}`);
+    }
+
+    async function pollFor201(payload, signal){
+      const startedAt = Date.now();
+      let result = await postAndMaybeGetData(payload, signal);
+
+      while(!result.done){
+        if(Date.now() - startedAt >= POLL_TIMEOUT_MS){
+          throw new Error("לא התקבל סטטוס 201 עם נתונים תוך 2 שניות.");
+        }
+        await new Promise(r => setTimeout(r, POLL_INTERVAL_MS));
+        result = await postAndMaybeGetData(payload, signal);
+      }
+
+      return result.data || {};
+    }
+
+    async function runSearch(){
+      const barcode = (barcodeInput.value || "").trim();
+      if(!barcode){
+        setStatus("חסר ברקוד", {error:true});
+        barcodeInput.focus();
+        return;
+      }
+
+      // Cancel previous
+      if(activeAbortController){
+        activeAbortController.abort();
+      }
+      activeAbortController = new AbortController();
+
+      searchBtn.disabled = true;
+      sumBtn.disabled = true;
+      clearBtn.disabled = true;
+
+      setStatus("נשלח... ממתין לסטטוס 201", {loading:true});
+
+      try{
+        const payload = await pollFor201({ barcode }, activeAbortController.signal);
+
+        setStatus("");
+        // פתיחת חלונית 3 שניות ואז חזרה אוטומטית מוכנה לסריקה
+        openModal({
+          wp_order_id: payload.wp_order_id ?? "",
+          driver_str: payload.driver_str ?? "",
+          barcode
+        });
+
+      }catch(err){
+        if(err?.name === "AbortError") return;
+        setStatus(err?.message || "שגיאה לא ידועה", {error:true});
+      }finally{
+        searchBtn.disabled = false;
+        sumBtn.disabled = false;
+        clearBtn.disabled = false;
+      }
+    }
+
+
+
+    async function runSumCheck(){
+      if(activeAbortController){
+        activeAbortController.abort();
+      }
+      activeAbortController = new AbortController();
+
+      searchBtn.disabled = true;
+      sumBtn.disabled = true;
+      clearBtn.disabled = true;
+
+      setStatus("נשלח בדיקת משטחים... ממתין לסטטוס 201", {loading:true});
+
+      try{
+        const payload = await pollFor201({ sum: "check" }, activeAbortController.signal);
+        const rows = normalizeSumRows(payload);
+        setStatus("");
+        openSumModal(rows);
+      }catch(err){
+        if(err?.name === "AbortError") return;
+        setStatus(err?.message || "שגיאה לא ידועה", {error:true});
+      }finally{
+        searchBtn.disabled = false;
+        sumBtn.disabled = false;
+        clearBtn.disabled = false;
+      }
+    }
+
+    async function registerServiceWorker(){
+      if(!("serviceWorker" in navigator)) return;
+      try{
+        await navigator.serviceWorker.register("./sw.js");
+      }catch(err){
+        console.error("Service worker registration failed", err);
+      }
+    }
+
+    // === Events ===
+    searchBtn.addEventListener("click", runSearch);
+    sumBtn.addEventListener("click", runSumCheck);
+    sumCloseBtn.addEventListener("click", closeSumModal);
+
+    installBtn.addEventListener("click", async () => {
+      if(!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      const choice = await deferredInstallPrompt.userChoice;
+      if(choice?.outcome === "accepted"){
+        deferredInstallPrompt = null;
+        toggleInstallButton(false);
+      }
+    });
+
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      toggleInstallButton(isMobileDevice() && !isStandalone());
+    });
+
+    window.addEventListener("appinstalled", () => {
+      deferredInstallPrompt = null;
+      toggleInstallButton(false);
+    });
+
+    clearBtn.addEventListener("click", () => {
+      barcodeInput.value = "";
+      resetTypingProfile();
+      setStatus("");
+      barcodeInput.focus();
+    });
+
+    barcodeInput.addEventListener("keydown", (e) => {
+      const now = performance.now();
+
+      if(firstKeyTime == null) firstKeyTime = now;
+      lastKeyTime = now;
+
+      if(e.key && e.key.length === 1) keyCount++;
+
+      if(e.key === "Enter"){
+        e.preventDefault();
+        const shouldAutoRun = isLikelyScan();
+        resetTypingProfile();
+
+        if(shouldAutoRun){
+          runSearch();
+        }else{
+          setStatus("הוקלד ידנית — לחץ על חיפוש", {loading:false});
+        }
+      }
+    });
+
+    barcodeInput.addEventListener("change", () => {
+      if(isLikelyScan()){
+        runSearch();
+      }
+      resetTypingProfile();
+    });
+
+    window.addEventListener("load", async () => {
+      barcodeInput.focus();
+      await registerServiceWorker();
+      if(isStandalone() || !isMobileDevice()){
+        toggleInstallButton(false);
+      }
+    });
+  </script>
+</body>
+</html>
